@@ -4,7 +4,6 @@
 # http://www.sphinx-doc.org/en/stable/rest.html for Sphinx RST syntax.
 
 from collections import defaultdict
-import copy
 import functools
 import sys
 import re
@@ -195,13 +194,19 @@ class TypeContext(object):
     self.type_name = 'file'
 
   def _Extend(self, path, type_name, name):
-    extended = copy.deepcopy(self)
-    extended.path.extend(path)
-    extended.type_name = type_name
     if not self.name:
-      extended.name = name
+      extended_name = name
     else:
-      extended.name = '%s.%s' % (self.name, name)
+      extended_name = '%s.%s' % (self.name, name)
+
+    extended = TypeContext(self.source_code_info, extended_name)
+    extended.path = self.path + path
+    extended.type_name = type_name
+
+    extended.map_typenames = self.map_typenames.copy()
+    extended.oneof_fields = self.oneof_fields.copy()
+    extended.oneof_required = self.oneof_required.copy()
+
     return extended
 
   def ExtendMessage(self, index, name):
